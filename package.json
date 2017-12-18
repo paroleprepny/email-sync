@@ -17,7 +17,8 @@
   },
   "homepage": "https://github.com/paroleprepny/email-sync#readme",
   "dependencies": {
-    "google-spreadsheet": "^2.0.4"
+    "google-spreadsheet": "^2.0.4",
+    "lodash.uniq": "^4.5.0"
   },
   "devDependencies": {
     "dotenv": "^4.0.0"
