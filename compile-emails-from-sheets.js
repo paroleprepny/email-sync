@@ -1,19 +1,26 @@
 const uniq = require('lodash.uniq')
-const { DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID } = process.env
+const parallel = require('async.parallel')
+const { DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID, GOOGLE_FORM_SHEET_ID } = process.env
 
 const compileEmailsFromSheets = (sheets, cb) => {
-  const donorsSheet = sheets.find(s => s.id === DONORS_SHEET_ID)
-  const volunteersSheet = sheets.find(s => s.id === VOLUNTEERS_SHEET_ID)
+  let all = []
+  let volunteers = []
 
-  getEmailsFromSheet(donorsSheet, (err, donorEmails) => {
-    if (err) return cb(err)
-    getEmailsFromSheet(volunteersSheet, (err, volunteerEmails) => {
-      if (err) return cb(err)
-      cb(null, {
-        all: uniq(donorEmails.concat(volunteerEmails)),
-        volunteers: volunteerEmails
+  const tasks = [DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID, GOOGLE_FORM_SHEET_ID].map(sheetId => {
+    return next => {
+      const sheet = sheets.find(s => s.id === sheetId)
+      getEmailsFromSheet(sheet, (err, emails) => {
+        if (err) return next(err)
+        if (sheetId === VOLUNTEERS_SHEET_ID) { volunteers = emails }
+        all = all.concat(emails)
+        next()
       })
-    })
+    }
+  })
+
+  parallel(tasks, err => {
+    if (err) return cb(err)
+    cb(null, { all: uniq(all), volunteers })
   })
 }
 
