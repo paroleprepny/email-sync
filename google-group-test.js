@@ -1,31 +1,31 @@
 require('dotenv').config()
-const { GOOGLE_CREDENTIALS } = process.env
+const { GOOGLE_CREDENTIALS, USER_EMAIL } = process.env
 const google = require('googleapis')
-// const drive = google.drive('v2')
+const service = google.admin('directory_v1')
 
 const key = JSON.parse(GOOGLE_CREDENTIALS)
+const authScopes = [
+  'https://www.googleapis.com/auth/admin.directory.user',
+  'https://www.googleapis.com/auth/admin.directory.group',
+  'https://www.googleapis.com/auth/admin.directory.group.member'
+]
 const jwtClient = new google.auth.JWT(
   key.client_email,
   null,
   key.private_key,
-  ['https://www.googleapis.com/auth/drive'], // an array of auth scopes
-  null
+  authScopes,
+  USER_EMAIL
 )
 
-jwtClient.authorize((err, tokens) => {
-  if (err) {
-    console.log(err)
-    return
-  }
+const cb = (err, res) => {
+  if (err) return console.error(err)
+  console.log(res)
+}
 
-  console.log({ tokens })
-
-  // Make an authorized request to list Drive files.
-  // drive.files.list({
-  //   auth: jwtClient
-  // }, (err, resp) => {
-  //   if (err) throw err
-  //   console.log(resp)
-  //   // handle err and response
-  // })
+jwtClient.authorize(err => {
+  if (err) throw err
+  service.groups.list({
+    auth: jwtClient,
+    customer: 'my_customer'
+  }, cb)
 })
