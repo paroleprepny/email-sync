@@ -1,19 +1,20 @@
 #!/usr/bin/env node
 
-require('dotenv').config()
-const GoogleSpreadsheet = require('google-spreadsheet')
+const getWorksheets = require('./get-worksheets')
 const compileEmailsFromSheets = require('./compile-emails-from-sheets')
-const { SPREADSHEET_KEY, GOOGLE_CREDENTIALS } = process.env
+const authorize = require('./authorize')
+const addEmails = require('./add-emails')
 
-const creds = JSON.parse(GOOGLE_CREDENTIALS)
-const doc = new GoogleSpreadsheet(SPREADSHEET_KEY)
-
-doc.useServiceAccountAuth(creds, () => {
-  doc.getInfo((err, info) => {
+getWorksheets((err, worksheets) => {
+  if (err) throw err
+  compileEmailsFromSheets(worksheets, (err, result) => {
     if (err) throw err
-    compileEmailsFromSheets(info.worksheets, (err, result) => {
+    const { all, volunteers } = result
+
+    authorize((err, jwtClient) => {
       if (err) throw err
-      console.log(JSON.stringify(result, null, 2))
+      addEmails({ jwtClient, groupEmail: 'pp-test-all@goodcall.nyc', emails: all })
+      addEmails({ jwtClient, groupEmail: 'pp-test-volunteers@goodcall.nyc', emails: volunteers })
     })
   })
 })

@@ -1,5 +1,5 @@
 const uniq = require('lodash.uniq')
-const parallel = require('async.parallel')
+const parallel = require('async/parallel')
 const { DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID, GOOGLE_FORM_SHEET_ID } = process.env
 
 const compileEmailsFromSheets = (sheets, cb) => {

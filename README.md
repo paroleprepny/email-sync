@@ -20,3 +20,13 @@
 - set `client name` to `client_id` from `GOOGLE_CREDENTIALS`
 - set `api scopes` to `https://www.googleapis.com/auth/admin.directory.user, https://www.googleapis.com/auth/admin.directory.group, https://www.googleapis.com/auth/admin.directory.group.member`
 - click authorize
+- ???
+
+---
+
+run `node print-google-groups.js`, and copy down the ids of the `volunteers` and `all` groups
+
+add `client_email` access to spreadsheets
+
+in both `all` and `volunteer` groups:
+`manage > permissions > basic permissions > allow members external to this organization: checked -- save`

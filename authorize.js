@@ -1,8 +1,6 @@
+const google = require('googleapis')
 require('dotenv').config()
 const { GOOGLE_CREDENTIALS, USER_EMAIL } = process.env
-const google = require('googleapis')
-const service = google.admin('directory_v1')
-
 const key = JSON.parse(GOOGLE_CREDENTIALS)
 const authScopes = [
   'https://www.googleapis.com/auth/admin.directory.user',
@@ -17,15 +15,14 @@ const jwtClient = new google.auth.JWT(
   USER_EMAIL
 )
 
-const cb = (err, res) => {
-  if (err) return console.error(err)
-  console.log(res)
+const authorize = cb => {
+  jwtClient.authorize(err => {
+    if (err) {
+      cb(err)
+    } else {
+      cb(null, jwtClient)
+    }
+  })
 }
 
-jwtClient.authorize(err => {
-  if (err) throw err
-  service.groups.list({
-    auth: jwtClient,
-    customer: 'my_customer'
-  }, cb)
-})
+module.exports = authorize
