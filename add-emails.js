@@ -1,6 +1,7 @@
 const google = require('googleapis')
 const service = google.admin('directory_v1')
 const groupBy = require('async/groupBy')
+const getNewEmails = require('./get-new-emails')
 
 const addEmails = ({ jwtClient, groupEmail, emails }) => {
   const addEmail = (email, cb) => {
@@ -13,10 +14,13 @@ const addEmails = ({ jwtClient, groupEmail, emails }) => {
     })
   }
 
-  groupBy(emails, addEmail, (err, result) => {
+  getNewEmails({ jwtClient, groupEmail, emails }, (err, newEmails) => {
     if (err) throw err
-    console.log(`added emails for ${groupEmail}`)
-    console.log(result)
+    groupBy(newEmails, addEmail, (err, result) => {
+      if (err) throw err
+      console.log(`added emails for ${groupEmail}`)
+      console.log(result)
+    })
   })
 }
 

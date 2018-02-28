@@ -10,7 +10,6 @@ getWorksheets((err, worksheets) => {
   compileEmailsFromSheets(worksheets, (err, result) => {
     if (err) throw err
     const { all, volunteers } = result
-
     authorize((err, jwtClient) => {
       if (err) throw err
       addEmails({ jwtClient, groupEmail: 'pp-test-all@goodcall.nyc', emails: all })
