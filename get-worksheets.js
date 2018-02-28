@@ -1,4 +1,4 @@
-require('dotenv').config()
+if (process.env.NODE_ENV !== 'production') { require('dotenv').config() }
 const GoogleSpreadsheet = require('google-spreadsheet')
 const { SPREADSHEET_KEY, GOOGLE_CREDENTIALS } = process.env
 

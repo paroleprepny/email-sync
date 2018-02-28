@@ -1,5 +1,5 @@
+if (process.env.NODE_ENV !== 'production') { require('dotenv').config() }
 const google = require('googleapis')
-require('dotenv').config()
 const { GOOGLE_CREDENTIALS, USER_EMAIL } = process.env
 const key = JSON.parse(GOOGLE_CREDENTIALS)
 const authScopes = [
