@@ -1,7 +1,9 @@
 const google = require('googleapis')
 const service = google.admin('directory_v1')
-const groupBy = require('async/groupBy')
+const groupBySeries = require('async/groupBySeries')
 const getNewEmails = require('./get-new-emails')
+
+const waitTimeMs = 50
 
 const addEmails = ({ jwtClient, groupEmail, emails }) => {
   const addEmail = (email, cb) => {
@@ -10,16 +12,24 @@ const addEmails = ({ jwtClient, groupEmail, emails }) => {
       resource: { email },
       auth: jwtClient
     }, (err, data) => {
-      cb(null, err ? 'error' : 'success')
+      setTimeout(() => {
+        if (err) {
+          const errReason = err.errors.map(e => e.reason).join(' ')
+          cb(null, errReason)
+        } else {
+          cb(null, 'success')
+        }
+      }, waitTimeMs)
     })
   }
 
   getNewEmails({ jwtClient, groupEmail, emails }, (err, newEmails) => {
     if (err) throw err
-    groupBy(newEmails, addEmail, (err, result) => {
+    console.log(`adding ${newEmails.length} new emails`)
+    groupBySeries(newEmails, addEmail, (err, result) => {
       if (err) throw err
       console.log(`added emails for ${groupEmail}`)
-      console.log(result)
+      console.log(JSON.stringify(result, null, 2))
     })
   })
 }
