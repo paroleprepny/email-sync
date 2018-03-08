@@ -3,10 +3,10 @@ const concat = require('async/concat')
 const compact = require('lodash.compact')
 const flatten = require('lodash.flatten')
 const { normalizeEmail } = require('validator')
-const { DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID, GOOGLE_FORM_SHEET_ID } = process.env
+const { DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID, GOOGLE_FORM_SHEET_ID, RELEASED_APPLICANTS_SHEET_ID } = process.env
 
 const compileEmailsFromSheets = (sheets, done) => {
-  concat([DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID, GOOGLE_FORM_SHEET_ID], (sheetId, next) => {
+  concat([DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID, GOOGLE_FORM_SHEET_ID, RELEASED_APPLICANTS_SHEET_ID], (sheetId, next) => {
     const sheet = sheets.find(s => s.id === sheetId)
     getEmailsFromSheet(sheet, (err, emails) => {
       if (err) return next(err)
