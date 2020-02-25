@@ -3,14 +3,15 @@ const concat = require('async/concat')
 const compact = require('lodash.compact')
 const flatten = require('lodash.flatten')
 const { normalizeEmail } = require('validator')
-const { DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID, GOOGLE_FORM_SHEET_ID, RELEASED_APPLICANTS_SHEET_ID, INTERESTED_VOLUNTEERS } = process.env
+const { DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID, SUPPORTERS_FORM_SHEET_ID, RELEASED_APPLICANTS_SHEET_ID, INTERESTED_VOLUNTEERS_FORM_ID } = process.env
 
 const compileEmailsFromSheets = (sheets, done) => {
-  concat([DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID, GOOGLE_FORM_SHEET_ID, RELEASED_APPLICANTS_SHEET_ID, INTERESTED_VOLUNTEERS], (sheetId, next) => {
-    const sheet = sheets.find(s => s.id === sheetId)
-    getEmailsFromSheet(sheet, (err, emails) => {
-      if (err) return next(err)
+  concat([DONORS_SHEET_ID, VOLUNTEERS_SHEET_ID, SUPPORTERS_FORM_SHEET_ID, RELEASED_APPLICANTS_SHEET_ID, INTERESTED_VOLUNTEERS_FORM_ID], (sheetId, next) => {
+    const sheet = sheets.find(s => s.sheetId.toString() === sheetId)
+    getEmailsFromSheet(sheet).then(emails => {
       next(null, emails)
+    }).catch(err => {
+      next(err)
     })
   }, (err, allEmails) => {
     if (err) return done(err)
@@ -18,17 +19,14 @@ const compileEmailsFromSheets = (sheets, done) => {
   })
 }
 
-function getEmailsFromSheet (sheet, cb) {
-  sheet.getRows((err, rows) => {
-    if (err) {
-      cb(err)
-    } else {
-      const sanitizedEmails = compact(flatten(rows.map(r => extractEmails(r.email))))
-      const uniqEmails = uniq(sanitizedEmails)
-      const normalizedEmails = uniqEmails.map(e => normalizeEmail(e))
-      cb(null, normalizedEmails)
-    }
-  })
+async function getEmailsFromSheet (sheet) {
+  const rows = await sheet.getRows()
+  const sanitizedEmails = compact(flatten(rows.map(r => extractEmails(
+    r._rawData.join(', ')
+  ))))
+  const uniqEmails = uniq(sanitizedEmails)
+  const normalizedEmails = uniqEmails.map(e => normalizeEmail(e))
+  return normalizedEmails
 }
 
 function extractEmails (text) {

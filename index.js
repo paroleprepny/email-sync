@@ -7,8 +7,9 @@ const authorize = require('./authorize')
 const addEmails = require('./add-emails')
 const { GROUP_EMAIL } = process.env
 
-getWorksheets((err, worksheets) => {
-  if (err) throw err
+const syncEmails = async () => {
+  const worksheets = await getWorksheets()
+
   compileEmailsFromSheets(worksheets, (err, emails) => {
     if (err) throw err
     authorize((err, jwtClient) => {
@@ -16,4 +17,6 @@ getWorksheets((err, worksheets) => {
       addEmails({ jwtClient, groupEmail: GROUP_EMAIL, emails })
     })
   })
-})
+}
+
+syncEmails()
